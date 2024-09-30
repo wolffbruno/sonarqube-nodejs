@@ -1,0 +1,34 @@
+
+trigger:
+  branches:
+    include:
+    - refs/heads/main
+name: $(date:yyyyMMdd)$(rev:.rr)
+jobs:
+- job: Phase_1
+  displayName: Build Push Image
+  cancelTimeoutInMinutes: 1
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+   # Checkout the repository
+  - checkout: self
+    fetchDepth: 0
+
+  - task: SonarQubePrepare@6
+    inputs:
+      SonarQube: '33aa2800-d904-4db5-b419-da11eb351d44'
+      scannerMode: 'CLI'
+      configMode: 'manual'
+      cliProjectKey: 'aplicacao-teste'
+      cliSources: './'
+
+# Run Code Analysis task
+  - task: SonarQubeAnalyze@6
+    inputs:
+      jdkversion: 'JAVA_HOME_17_X64'
+
+# Publish Quality Gate Result task
+  - task: SonarQubePublish@6
+    inputs:
+      pollingTimeoutSec: '300'
